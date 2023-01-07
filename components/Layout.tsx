@@ -9,20 +9,25 @@ import {
 } from "@mantine/core";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import { useRouter } from "next/router";
+import { useMutation } from "react-query";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const supabaseClient = useSupabaseClient();
   const router = useRouter();
   const user = useUser();
 
-  async function signInWithGithub() {
+  const { mutate } = useMutation(async () => {
     await supabaseClient.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: "http://localhost:3000/dashboard",
+        // redirect to /logging-in after successful login
+        redirectTo: process.env.NEXT_PUBLIC_URL + "/logging-in",
       },
     });
-    router.push("/dashboard");
+  });
+
+  async function signInWithGithub() {
+    mutate();
   }
   async function signOut() {
     await supabaseClient.auth.signOut();

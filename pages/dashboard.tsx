@@ -11,16 +11,26 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
-import { IconFlame } from "@tabler/icons";
-import { useEffect, useState } from "react";
-import { useQuery } from "react-query";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { Habit } from "../types/habit.types";
 import { Database } from "../types/supabase";
 
 const HabitCard = ({ habit }: { habit: Habit }) => {
-  const client = useSupabaseClient<Database>();
+  const supa = useSupabaseClient<Database>();
+  const queryClient = useQueryClient();
+  const { mutate: deleteTodo } = useMutation(
+    async () => {
+      await supa.from("habits").delete().eq("id", habit.id);
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("habits");
+      },
+    }
+  );
   const handleDelete = async () => {
-    await client.from("habits").delete().eq("id", habit.id);
+    deleteTodo();
   };
   return (
     <Card withBorder>
@@ -38,21 +48,32 @@ const HabitCard = ({ habit }: { habit: Habit }) => {
 };
 
 const CreateHabitButton = () => {
-  const client = useSupabaseClient<Database>();
+  const supa = useSupabaseClient<Database>();
   const user = useUser();
   const [opened, setOpened] = useState(false);
+  const queryClient = useQueryClient();
   const form = useForm({
     initialValues: {
       title: "",
     },
   });
 
-  const handleSubmit = async (values: any) => {
-    user &&
-      (await client.from("habits").insert({
+  const { mutate: createHabit } = useMutation(
+    async (values: any) =>
+      user &&
+      (await supa.from("habits").insert({
         title: values.title,
         user_id: user.id,
-      }));
+      })),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("habits");
+      },
+    }
+  );
+
+  const handleSubmit = async (values: any) => {
+    createHabit(values);
 
     setOpened(false);
   };
@@ -76,13 +97,9 @@ const CreateHabitButton = () => {
 };
 
 export default function Dashboard() {
-  const { data: habits } = useQuery("getAllHabits", async () => {
-    const response = await fetch("/api/habits");
-    const {
-      data,
-    }: {
-      data: Habit[];
-    } = await response.json();
+  const supa = useSupabaseClient<Database>();
+  const { data: habits } = useQuery("habits", async () => {
+    const { data } = await supa.from("habits").select("*");
     return data;
   });
 
@@ -90,11 +107,11 @@ export default function Dashboard() {
     <>
       <Container>
         <Title>Habits</Title>
-        {/* <CreateHabitButton /> */}
+        <CreateHabitButton />
         <Stack>
-          {/* {habits?.map((habit) => (
+          {habits?.map((habit) => (
             <HabitCard habit={habit} key={habit.id} />
-          ))} */}
+          ))}
         </Stack>
       </Container>
     </>
