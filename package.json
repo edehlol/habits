@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "supatypes": "npx supabase gen types typescript --project-id nxfdckbkwgyyxddumojn --schema public > types/supabase.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.10.5",
@@ -16,6 +17,9 @@
     "@mantine/hooks": "^5.10.0",
     "@mantine/next": "^5.10.0",
     "@next/font": "13.1.1",
+    "@supabase/auth-helpers-nextjs": "^0.5.2",
+    "@supabase/auth-helpers-react": "^0.3.1",
+    "@supabase/supabase-js": "^2.2.3",
     "@tabler/icons": "^1.119.0",
     "@types/node": "18.11.18",
     "@types/react": "18.0.26",
