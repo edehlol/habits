@@ -41,7 +41,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Text>Habits</Text>
             <>
               {user ? (
-                <Button onClick={signOut}>Sign out</Button>
+                <Button color="red" onClick={signOut}>
+                  Sign out
+                </Button>
               ) : (
                 <Button onClick={signInWithGithub}>Sign in with Github</Button>
               )}
