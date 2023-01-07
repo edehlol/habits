@@ -16,12 +16,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const user = useUser();
 
   async function signInWithGithub() {
-    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+    await supabaseClient.auth.signInWithOAuth({
       provider: "github",
       options: {
         redirectTo: "http://localhost:3000/dashboard",
       },
     });
+    router.push("/dashboard");
   }
   async function signOut() {
     await supabaseClient.auth.signOut();

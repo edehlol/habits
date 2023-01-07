@@ -7,7 +7,10 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { Database } from "../types/supabase";
 
 export const supabaseClient = createBrowserSupabaseClient<Database>();
-export const supabaseServerClient = (
-  req: NextApiRequest,
-  res: NextApiResponse
-) => createServerSupabaseClient<Database>({ req, res });
+export const supabaseServerClient = ({
+  req,
+  res,
+}: {
+  req: NextApiRequest;
+  res: NextApiResponse;
+}) => createServerSupabaseClient<Database>({ req, res });

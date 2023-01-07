@@ -13,6 +13,7 @@ import { useForm } from "@mantine/form";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import { IconFlame } from "@tabler/icons";
 import { useEffect, useState } from "react";
+import { useQuery } from "react-query";
 import { Habit } from "../types/habit.types";
 import { Database } from "../types/supabase";
 
@@ -75,33 +76,25 @@ const CreateHabitButton = () => {
 };
 
 export default function Dashboard() {
-  const supabaseClient = useSupabaseClient<Database>();
-  const user = useUser();
-  const [habits, setHabits] = useState<Habit[] | []>([]);
-
-  console.log(user);
-
-  useEffect(() => {
-    const fetchTodos = async () => {
-      const { data } = await supabaseClient
-        .from("habits")
-        .select("*")
-        .eq("user_id", user?.id);
-      console.log(data);
-      data && setHabits(data);
-    };
-    user && fetchTodos();
-  }, [supabaseClient, user]);
+  const { data: habits } = useQuery("getAllHabits", async () => {
+    const response = await fetch("/api/habits");
+    const {
+      data,
+    }: {
+      data: Habit[];
+    } = await response.json();
+    return data;
+  });
 
   return (
     <>
       <Container>
         <Title>Habits</Title>
-        <CreateHabitButton />
+        {/* <CreateHabitButton /> */}
         <Stack>
-          {habits.map((habit) => (
+          {/* {habits?.map((habit) => (
             <HabitCard habit={habit} key={habit.id} />
-          ))}
+          ))} */}
         </Stack>
       </Container>
     </>
