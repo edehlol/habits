@@ -20,8 +20,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     await supabaseClient.auth.signInWithOAuth({
       provider: "github",
       options: {
-        // redirect to /logging-in after successful login
-        redirectTo: process.env.NEXT_PUBLIC_URL + "/logging-in",
+        redirectTo: `${process.env.NEXT_PUBLIC_URL}/logging-in`,
       },
     });
   });

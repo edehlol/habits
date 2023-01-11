@@ -4,6 +4,7 @@ import {
   Container,
   Group,
   Modal,
+  SimpleGrid,
   Stack,
   Text,
   TextInput,
@@ -19,6 +20,58 @@ import { Database } from "../types/supabase";
 const HabitCard = ({ habit }: { habit: Habit }) => {
   const supa = useSupabaseClient<Database>();
   const queryClient = useQueryClient();
+
+  const { data: completedDates } = useQuery(
+    ["completedDates", habit.id],
+    async () => {
+      const { data, error } = await supa
+        .from("habit_completions")
+        .select("completed_at")
+        .eq("habit_id", habit.id);
+      if (error) {
+        throw new Error(error.message);
+      }
+      return data;
+    }
+  );
+
+  // check if habit is completed today
+  const completedToday = completedDates?.some((date) => {
+    const completedAt = new Date(date.completed_at);
+    const today = new Date();
+    return (
+      completedAt.getDate() === today.getDate() &&
+      completedAt.getMonth() === today.getMonth() &&
+      completedAt.getFullYear() === today.getFullYear()
+    );
+  });
+
+  const { mutate: completeTodo } = useMutation(
+    async () => {
+      // save the current date in YYYY-MM-DD format
+      const currentDate = new Date().toISOString().split("T")[0];
+      console.log(currentDate);
+      // if habit is completed today, delete the completion otherwise create a new one
+      if (completedToday) {
+        console.log("huh?");
+        await supa.from("habit_completions").delete().eq("habit_id", habit.id);
+        // .eq("completed_at", currentDate);
+        return;
+      } else {
+        await supa.from("habit_completions").insert({
+          habit_id: habit.id,
+          completed_at: new Date().toISOString(),
+          user_id: habit.user_id,
+        });
+      }
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(["completedDates", habit.id]);
+      },
+    }
+  );
+
   const { mutate: deleteTodo } = useMutation(
     async () => {
       await supa.from("habits").delete().eq("id", habit.id);
@@ -29,15 +82,24 @@ const HabitCard = ({ habit }: { habit: Habit }) => {
       },
     }
   );
+  const handleComplete = async () => {
+    completeTodo();
+  };
   const handleDelete = async () => {
     deleteTodo();
   };
   return (
-    <Card withBorder>
+    <Card withBorder h={200}>
       <Group position="apart">
         <Text>{habit.title}</Text>
+
         <Group>
-          <Button>Complete</Button>
+          <Button
+            color={completedToday ? "green" : "blue"}
+            onClick={handleComplete}
+          >
+            {completedToday ? "Completed" : "Complete"}
+          </Button>
           <Button onClick={handleDelete} color="red">
             Delete
           </Button>
@@ -108,11 +170,11 @@ export default function Dashboard() {
       <Container>
         <Title>Habits</Title>
         <CreateHabitButton />
-        <Stack>
+        <SimpleGrid cols={4}>
           {habits?.map((habit) => (
             <HabitCard habit={habit} key={habit.id} />
           ))}
-        </Stack>
+        </SimpleGrid>
       </Container>
     </>
   );
