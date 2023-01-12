@@ -160,8 +160,17 @@ const CreateHabitButton = () => {
 
 export default function Dashboard() {
   const supa = useSupabaseClient<Database>();
+
   const { data: habits } = useQuery("habits", async () => {
-    const { data } = await supa.from("habits").select("*");
+    const {
+      data: { user },
+    } = await supa.auth.getUser();
+    console.log(user);
+    const { data, error } = await supa
+      .from("habits")
+      .select("*")
+      .eq("user_id", user?.id);
+
     return data;
   });
 
