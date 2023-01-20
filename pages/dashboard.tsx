@@ -10,16 +10,19 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
+import { DatePicker, Calendar, Month } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import { Habit } from "../types/habit.types";
 import { Database } from "../types/supabase";
+import dayjs from "dayjs";
 
 const HabitCard = ({ habit }: { habit: Habit }) => {
   const supa = useSupabaseClient<Database>();
   const queryClient = useQueryClient();
+  const [calendarValue, setCalendarValue] = useState<Date[]>([]);
 
   const { data: completedDates } = useQuery(
     ["completedDates", habit.id],
@@ -35,7 +38,13 @@ const HabitCard = ({ habit }: { habit: Habit }) => {
     }
   );
 
-  // check if habit is completed today
+  useEffect(() => {
+    completedDates &&
+      setCalendarValue(
+        completedDates.map((date) => new Date(date.completed_at))
+      );
+  }, [completedDates]);
+
   const completedToday = completedDates?.some((date) => {
     const completedAt = new Date(date.completed_at);
     const today = new Date();
@@ -46,21 +55,26 @@ const HabitCard = ({ habit }: { habit: Habit }) => {
     );
   });
 
-  const { mutate: completeTodo } = useMutation(
-    async () => {
-      // save the current date in YYYY-MM-DD format
-      const currentDate = new Date().toISOString().split("T")[0];
-      console.log(currentDate);
-      // if habit is completed today, delete the completion otherwise create a new one
-      if (completedToday) {
-        console.log("huh?");
-        await supa.from("habit_completions").delete().eq("habit_id", habit.id);
-        // .eq("completed_at", currentDate);
-        return;
+  const { mutate: completeHabit } = useMutation(
+    async (date: Date) => {
+      if (
+        completedDates
+          ?.map((date) => date.completed_at)
+          .includes(dayjs(date).format("YYYY-MM-DD"))
+      ) {
+        console.log("deleting");
+        await supa
+          .from("habit_completions")
+          .delete()
+          .match({
+            user_id: habit.user_id,
+            habit_id: habit.id,
+            completed_at: dayjs(date).format("YYYY-MM-DD"),
+          });
       } else {
         await supa.from("habit_completions").insert({
           habit_id: habit.id,
-          completed_at: new Date().toISOString(),
+          completed_at: dayjs(date).format("YYYY-MM-DD"),
           user_id: habit.user_id,
         });
       }
@@ -82,21 +96,19 @@ const HabitCard = ({ habit }: { habit: Habit }) => {
       },
     }
   );
-  const handleComplete = async () => {
-    completeTodo();
-  };
+
   const handleDelete = async () => {
     deleteTodo();
   };
   return (
-    <Card withBorder h={200}>
+    <Card withBorder>
       <Group position="apart">
         <Text>{habit.title}</Text>
 
         <Group>
           <Button
             color={completedToday ? "green" : "blue"}
-            onClick={handleComplete}
+            onClick={() => completeHabit(new Date())}
           >
             {completedToday ? "Completed" : "Complete"}
           </Button>
@@ -105,6 +117,44 @@ const HabitCard = ({ habit }: { habit: Habit }) => {
           </Button>
         </Group>
       </Group>
+      <Calendar
+        multiple
+        value={calendarValue}
+        onChange={(selectedDates) => {
+          const isUnselecting = calendarValue.length > selectedDates.length;
+          let unselectedDate: Date | undefined;
+
+          function difference(arr1: Date[], arr2: Date[]) {
+            return arr1.filter((x) => !arr2.includes(x));
+          }
+
+          if (isUnselecting) {
+            unselectedDate = difference(
+              [...calendarValue].sort(),
+              [...selectedDates].sort()
+            ).shift();
+            console.log("unselectedDate", unselectedDate);
+            unselectedDate && completeHabit(unselectedDate);
+            const newDates = calendarValue.filter(
+              (date) => date !== unselectedDate
+            );
+            setCalendarValue(newDates);
+            return;
+          }
+
+          const lastSelectedDate = selectedDates.at(-1);
+
+          if (
+            lastSelectedDate &&
+            !completedDates
+              ?.map((date) => date.completed_at)
+              .includes(lastSelectedDate.toISOString())
+          ) {
+            completeHabit(lastSelectedDate);
+            setCalendarValue([...calendarValue, lastSelectedDate]);
+          }
+        }}
+      />
     </Card>
   );
 };
@@ -179,11 +229,11 @@ export default function Dashboard() {
       <Container>
         <Title>Habits</Title>
         <CreateHabitButton />
-        <SimpleGrid cols={4}>
-          {habits?.map((habit) => (
-            <HabitCard habit={habit} key={habit.id} />
-          ))}
-        </SimpleGrid>
+        {/* <SimpleGrid cols={4}> */}
+        {habits?.map((habit) => (
+          <HabitCard habit={habit} key={habit.id} />
+        ))}
+        {/* </SimpleGrid> */}
       </Container>
     </>
   );

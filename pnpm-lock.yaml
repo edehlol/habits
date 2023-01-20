@@ -4,6 +4,7 @@ specifiers:
   '@emotion/react': ^11.10.5
   '@emotion/server': ^11.10.0
   '@mantine/core': ^5.10.0
+  '@mantine/dates': ^5.10.0
   '@mantine/form': ^5.10.0
   '@mantine/hooks': ^5.10.0
   '@mantine/next': ^5.10.0
@@ -15,6 +16,7 @@ specifiers:
   '@types/node': 18.11.18
   '@types/react': 18.0.26
   '@types/react-dom': 18.0.10
+  dayjs: ^1.11.7
   eslint: 8.31.0
   eslint-config-next: 13.1.1
   next: 13.1.1
@@ -28,6 +30,7 @@ dependencies:
   '@emotion/react': 11.10.5_kzbn2opkn2327fwg5yzwzya5o4
   '@emotion/server': 11.10.0
   '@mantine/core': 5.10.0_lbfixegkxal6rwioqxubxet6s4
+  '@mantine/dates': 5.10.0_afutlozjtr4cmm2smwl7mxxxdy
   '@mantine/form': 5.10.0_react@18.2.0
   '@mantine/hooks': 5.10.0_react@18.2.0
   '@mantine/next': 5.10.0_d5xj5jipthoiwqd5a5nbaex2p4
@@ -39,6 +42,7 @@ dependencies:
   '@types/node': 18.11.18
   '@types/react': 18.0.26
   '@types/react-dom': 18.0.10
+  dayjs: 1.11.7
   eslint: 8.31.0
   eslint-config-next: 13.1.1_iukboom6ndih5an6iafl45j2fe
   next: 13.1.1_biqbaboplfbrettd7655fr4n2y
@@ -321,6 +325,21 @@ packages:
     transitivePeerDependencies:
       - '@emotion/react'
       - '@types/react'
+    dev: false
+
+  /@mantine/dates/5.10.0_afutlozjtr4cmm2smwl7mxxxdy:
+    resolution: {integrity: sha512-gK+BiXaTY9X1ESjRPNI7CASYx/QseDolNUJBqvXw6YB19QQ/PFCnyoj3xGiJUqiYfzKbFDKfTVSkP5cR6SHljA==}
+    peerDependencies:
+      '@mantine/core': 5.10.0
+      '@mantine/hooks': 5.10.0
+      dayjs: '>=1.0.0'
+      react: '>=16.8.0'
+    dependencies:
+      '@mantine/core': 5.10.0_lbfixegkxal6rwioqxubxet6s4
+      '@mantine/hooks': 5.10.0_react@18.2.0
+      '@mantine/utils': 5.10.0_react@18.2.0
+      dayjs: 1.11.7
+      react: 18.2.0
     dev: false
 
   /@mantine/form/5.10.0_react@18.2.0:
@@ -1282,6 +1301,10 @@ packages:
 
   /damerau-levenshtein/1.0.8:
     resolution: {integrity: sha512-sdQSFB7+llfUcQHUQO3+B8ERRj0Oa4w9POWMI/puGtuf7gFywGmkaLCElnudfTiKZV+NvHqL0ifzdrI8Ro7ESA==}
+    dev: false
+
+  /dayjs/1.11.7:
+    resolution: {integrity: sha512-+Yw9U6YO5TQohxLcIkrXBeY73WP3ejHWVvx8XCk3gxvQDCTEmS48ZrSZCKciI7Bhl/uCMyxYtE9UqRILmFphkQ==}
     dev: false
 
   /debug/2.6.9:

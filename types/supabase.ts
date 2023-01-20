@@ -11,40 +11,40 @@ export interface Database {
     Tables: {
       habit_completions: {
         Row: {
-          id: number
-          habit_id: number
-          user_id: string
           completed_at: string
+          habit_id: number | null
+          id: number
+          user_id: string
         }
         Insert: {
-          id?: number
-          habit_id: number
-          user_id: string
           completed_at: string
+          habit_id?: number | null
+          id?: number
+          user_id: string
         }
         Update: {
-          id?: number
-          habit_id?: number
-          user_id?: string
           completed_at?: string
+          habit_id?: number | null
+          id?: number
+          user_id?: string
         }
       }
       habits: {
         Row: {
-          id: number
           created_at: string | null
+          id: number
           title: string
           user_id: string
         }
         Insert: {
-          id?: number
           created_at?: string | null
+          id?: number
           title: string
           user_id: string
         }
         Update: {
-          id?: number
           created_at?: string | null
+          id?: number
           title?: string
           user_id?: string
         }
